@@ -58,8 +58,11 @@ jobs:
 
       - name: Bygg og push Docker image
         run: |
-          IMAGE_NAME=$(basename $(dirname "${{ matrix.dockerfile }}"))
-          IMAGE_TAG=${{ env.REGISTRY }}/${{ github.repository }}/$IMAGE_NAME:latest
+          # Get the relative path from salamicontainers/salami/
+          REL_PATH=$(realpath --relative-to="${GITHUB_WORKSPACE}/salamicontainers/salami" "$(dirname "${{ matrix.dockerfile }}")")
+          # Replace slashes with dashes for image name
+          IMAGE_NAME=$(echo "$REL_PATH" | tr '/' '-')
+          IMAGE_TAG=${{ env.REGISTRY }}/${{ github.repository }}:$IMAGE_NAME
 
           echo "Bygger $IMAGE_TAG"
           docker build -f "${{ matrix.dockerfile }}" -t "$IMAGE_TAG" "$(dirname "${{ matrix.dockerfile }}")"
