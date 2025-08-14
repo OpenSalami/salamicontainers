@@ -38,6 +38,7 @@ jobs:
 
   build-and-push:
     needs: detect-changes
+    if: needs.detect-changes.outputs.changed-dockerfiles != '[]'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
