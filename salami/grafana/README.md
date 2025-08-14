@@ -1,4 +1,4 @@
-# Bitnami package for Grafana
+# Salami package for Grafana
 
 ## What is Grafana?
 
@@ -10,7 +10,7 @@ Trademarks: This software listing is packaged by The OpenSalami Project. The res
 ## TL;DR
 
 ```console
-docker run --name grafana bitnami/grafana:latest
+docker run --name grafana salami/grafana:latest
 ```
 
 ## How to deploy Grafana in Kubernetes?
@@ -185,37 +185,11 @@ docker run -d --name grafana -p 3000:3000 \
     bitnami/grafana:latest
 ```
 
-#### Grafana Image Renderer plugin
 
-You can install the [Grafana Image Renderer plugin](https://github.com/grafana/grafana-image-renderer) to handle rendering panels and dashboards as PNG images. To install the plugin, follow the instructions described in the [previous section](#install-plugins-at-initialization).
-
-As an alternative to install this plugin, you can use the [Grafana Image Renderer container](https://github.com/bitnami/containers/blob/main/bitnami/grafana-image-renderer) to set another Docker container for rendering and using remote rendering. We highly recommend to use this option. In the Docker Compose below you can see an example to use this container:
-
-```yaml
-version: '2'
-
-services:
-  grafana:
-    image: bitnami/grafana:latest
-    ports:
-      - 3000:3000
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: "bitnami"
-      GF_RENDERING_SERVER_URL: "http://grafana-image-renderer:8080/render"
-      GF_RENDERING_CALLBACK_URL: "http://grafana:3000/"
-  grafana-image-renderer:
-    image: bitnami/grafana-image-renderer:latest
-    ports:
-      - 8080:8080
-    environment:
-      HTTP_HOST: "0.0.0.0"
-      HTTP_PORT: "8080"
-      ENABLE_METRICS: 'true'
-```
 
 ## Logging
 
-The Bitnami Grafana Docker image sends the container logs to the `stdout`. To view the logs:
+The Salmai Grafana Docker image sends the container logs to the `stdout`. To view the logs:
 
 ```console
 docker logs grafana
@@ -227,12 +201,12 @@ You can configure the containers [logging driver](https://docs.docker.com/engine
 
 ### Upgrade this image
 
-Bitnami provides up-to-date versions of grafana, including security patches, soon after they are made upstream. We recommend that you follow these steps to upgrade your container.
+The OpenSalami provides up-to-date versions of grafana, including security patches, soon after they are made upstream. We recommend that you follow these steps to upgrade your container.
 
 #### Step 1: Get the updated image
 
 ```console
-docker pull bitnami/grafana:latest
+docker pull /grafana:latest
 ```
 
 #### Step 2: Stop and backup the currently running container

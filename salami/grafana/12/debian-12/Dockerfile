@@ -20,7 +20,7 @@ ENV HOME="/" \
     OS_ARCH="${TARGETARCH:-amd64}" \
     OS_FLAVOUR="debian-12" \
     OS_NAME="linux" \
-    SALAMI_APP_NAME="grafana" 
+    SALAMI_APP_NAME="grafana"
 
 COPY prebuildfs /
 SHELL ["/bin/bash", "-o", "errexit", "-o", "nounset", "-o", "pipefail", "-c"]
