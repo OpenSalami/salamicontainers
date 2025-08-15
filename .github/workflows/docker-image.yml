@@ -15,6 +15,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Fetch remote main
+        run: git fetch origin main
+
       - name: Finn endrede Dockerfiles
         id: find
         run: |
@@ -25,7 +28,7 @@ jobs:
           fi
           # Output as JSON array for matrix
           echo "changed=$(echo "$FILES" | jq -R -s -c 'split("\n") | map(select(length>0))')" >> $GITHUB_OUTPUT
-
+          
   build-and-push:
     needs: detect-changes
     if: needs.detect-changes.outputs.changed != '[]'
