@@ -3,50 +3,52 @@ name: Build and push changed Dockerfiles
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
-  build-and-push:
+  detect-changes:
     runs-on: ubuntu-latest
-
+    outputs:
+      changed: ${{ steps.find.outputs.changed }}
     steps:
-      - name: Sjekk ut koden
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Viktig for git diff
+          fetch-depth: 0
 
       - name: Finn endrede Dockerfiles
         id: find
         run: |
-          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'Dockerfile$' || true)
-
+          FILES=$(git diff --name-only origin/master...HEAD | grep 'Dockerfile$' || true)
           if [ -z "$FILES" ]; then
-            echo "Ingen endrede Dockerfiles i denne pushen."
-            echo "files=" >> $GITHUB_OUTPUT
+            echo "changed=[]" >> $GITHUB_OUTPUT
             exit 0
           fi
+          # Output as JSON array for matrix
+          echo "changed=$(echo "$FILES" | jq -R -s -c 'split("\n") | map(select(length>0))')" >> $GITHUB_OUTPUT
 
-          echo "Fant følgende endrede Dockerfiles:"
-          echo "$FILES"
-
-          FILES_ESCAPED=$(echo "$FILES" | tr '\n' ' ')
-          echo "files=$FILES_ESCAPED" >> $GITHUB_OUTPUT
+  build-and-push:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.changed != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dockerfile: ${{ fromJson(needs.detect-changes.outputs.changed) }}
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Logg inn på Docker Hub
-        if: ${{ steps.find.outputs.files != '' }}
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Bygg og push images
-        if: ${{ steps.find.outputs.files != '' }}
+      - name: Bygg og push image
         run: |
-          for file in ${{ steps.find.outputs.files }}; do
-            dir=$(dirname "$file")
-            image_name=$(basename "$dir")
-
-            echo "Bygger og pusher $image_name fra $file..."
-            docker build "$dir" -t ${{ secrets.DOCKERHUB_USERNAME }}/$image_name:latest
-            docker push ${{ secrets.DOCKERHUB_USERNAME }}/$image_name:latest
-          done
+          DOCKERFILE="${{ matrix.dockerfile }}"
+          DIR=$(dirname "$DOCKERFILE")
+          # Get path under salamicontainers/salami and use as image name
+          IMAGE_PATH=$(python3 -c "import os.path; print(os.path.relpath('$DIR', 'salamicontainers/salami'))")
+          IMAGE_NAME=$(echo "$IMAGE_PATH" | tr '/' '-')
+          docker build -f "$DOCKERFILE" -t ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:latest "$DIR"
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:latest

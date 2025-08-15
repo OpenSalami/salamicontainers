@@ -9,14 +9,13 @@ ARG GRAFANA_VERSION="12.1.1"
 ARG TARGETARCH
 
 LABEL org.opencontainers.image.base.name="docker.io/bitnami/minideb:bookworm" \
-      org.opencontainers.image.created="2025-08-13T19:28:34Z" \
       org.opencontainers.image.description="Application packed by The OpenSalami project" \
       org.opencontainers.image.documentation="https://github.com/opensalami/containers/tree/main/salami/grafana/README.md" \
       org.opencontainers.image.source="https://github.com/opensalami/containers/tree/main/salami/grafana" \
       org.opencontainers.image.title="grafana" \
       org.opencontainers.image.vendor="The OpenSalami project" \
       org.opencontainers.image.version="${GRAFANA_VERSION}" 
-      
+
 ENV HOME="/" \
     OS_ARCH="${TARGETARCH:-amd64}" \
     OS_FLAVOUR="debian-12" \
