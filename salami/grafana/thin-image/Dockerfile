@@ -1,6 +1,7 @@
 FROM alpine:3.20 AS builder
 
 ENV GRAFANA_VERSION=12.1.1
+
 WORKDIR /tmp
 RUN apk add --no-cache curl tar git ca-certificates shadow util-linux su-exec && \
     curl -fsSL -o grafana.tar.gz "https://dl.grafana.com/oss/release/grafana-${GRAFANA_VERSION}.linux-amd64.tar.gz" && \
@@ -8,14 +9,12 @@ RUN apk add --no-cache curl tar git ca-certificates shadow util-linux su-exec &&
     tar -xzf grafana.tar.gz -C /grafana --strip-components=1 && \
     git clone https://github.com/OpenSalami/rootfs.git /prebuildfs
 
-# Ensure all .sh scripts are executable (does not fail if none found)
+
 RUN find /prebuildfs/prebuildfs/opt/salami/scripts -type f -name '*.sh' -exec chmod +x {} \; || true
 COPY rootfs /rootfs
 RUN find /rootfs/opt/salami/scripts -type f -name '*.sh' -exec chmod +x {} \; || true
 RUN touch /grafana/conf/sample.ini
 RUN mkdir -p /opt/salami/scripts && cp -r /rootfs/opt/salami/scripts/* /opt/salami/scripts/ && cp /prebuildfs/prebuildfs/opt/salami/scripts/* /opt/salami/scripts/
-
-ENV GRAFANA_BASE_DIR=/grafana 
 
 RUN /opt/salami/scripts/grafana/postunpack.sh
 
