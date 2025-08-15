@@ -5,6 +5,7 @@ FROM docker.io/bitnami/minideb:bookworm
 
 ARG DOWNLOADS_URL="dl.grafana.com/grafana/release/12.1.1/"
 ARG GRAFANA_TARBALL="grafana_12.1.1_16903967602_linux_amd64.tar.gz"
+ARG GRAFANA_VERSION="12.1.1"
 ARG TARGETARCH
 
 LABEL org.opencontainers.image.base.name="docker.io/bitnami/minideb:bookworm" \
@@ -14,8 +15,8 @@ LABEL org.opencontainers.image.base.name="docker.io/bitnami/minideb:bookworm" \
       org.opencontainers.image.source="https://github.com/opensalami/containers/tree/main/salami/grafana" \
       org.opencontainers.image.title="grafana" \
       org.opencontainers.image.vendor="The OpenSalami project" \
-      org.opencontainers.image.version="12.1.1"
-
+      org.opencontainers.image.version="${GRAFANA_VERSION}" 
+      
 ENV HOME="/" \
     OS_ARCH="${TARGETARCH:-amd64}" \
     OS_FLAVOUR="debian-12" \
@@ -40,8 +41,8 @@ RUN find / -perm /6000 -type f -exec chmod a-s {} \; || true
 
 COPY rootfs /
 RUN /opt/salami/scripts/grafana/postunpack.sh
-ENV APP_VERSION="12.1.1" \
-    salami_APP_NAME="grafana" \
+ENV APP_VERSION="${GRAFANA_VERSION}}" \
+    SALAMI_APP_NAME="grafana" \
     PATH="/opt/salami/mysql/bin:/opt/salami/common/bin:/opt/salami/grafana/bin:$PATH"
 
 EXPOSE 3000
