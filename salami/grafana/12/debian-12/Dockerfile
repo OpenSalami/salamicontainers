@@ -4,7 +4,7 @@
 FROM docker.io/bitnami/minideb:bookworm
 
 ARG DOWNLOADS_URL="dl.grafana.com/grafana/release/12.1.0/"
-ARG GRAFANA_TARBALL="grafana_12.1.0_16903967602_linux_amd64.tar.gz"
+ARG GRAFANA_TARBALL="grafana-12.1.0.linux-amd64.tar.gz"
 ARG GRAFANA_VERSION="12.1.0"
 ARG TARGETARCH
 
