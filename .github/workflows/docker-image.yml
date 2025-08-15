@@ -14,9 +14,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # This ensures all history and branches are fetched
 
-      - name: Fetch remote main
-        run: git fetch origin main
+      - name: Ensure remote main is available
+        run: |
+          git remote set-branches origin main
+          git fetch origin main
 
       - name: Finn endrede Dockerfiles
         id: find
@@ -28,7 +31,7 @@ jobs:
           fi
           # Output as JSON array for matrix
           echo "changed=$(echo "$FILES" | jq -R -s -c 'split("\n") | map(select(length>0))')" >> $GITHUB_OUTPUT
-          
+
   build-and-push:
     needs: detect-changes
     if: needs.detect-changes.outputs.changed != '[]'
@@ -50,7 +53,6 @@ jobs:
         run: |
           DOCKERFILE="${{ matrix.dockerfile }}"
           DIR=$(dirname "$DOCKERFILE")
-          # Get path under salamicontainers/salami and use as image name
           IMAGE_PATH=$(python3 -c "import os.path; print(os.path.relpath('$DIR', 'salamicontainers/salami'))")
           IMAGE_NAME=$(echo "$IMAGE_PATH" | tr '/' '-')
           docker build -f "$DOCKERFILE" -t ${{ secrets.DOCKERHUB_USERNAME }}/$IMAGE_NAME:latest "$DIR"
