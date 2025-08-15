@@ -18,7 +18,7 @@ jobs:
       - name: Finn endrede Dockerfiles
         id: find
         run: |
-          FILES=$(git diff --name-only origin/master...HEAD | grep 'Dockerfile$' || true)
+          FILES=$(git diff --name-only origin/main...HEAD | grep 'Dockerfile$' || true)
           if [ -z "$FILES" ]; then
             echo "changed=[]" >> $GITHUB_OUTPUT
             exit 0
