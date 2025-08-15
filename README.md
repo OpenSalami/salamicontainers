@@ -2,8 +2,13 @@
 
 A catalog of images I have been curated. Mostly from a fork of the Bitnami catalog.
 
-# New ThinImage
-Still uses the bitnami minideb base image, but im working on scratch building the images. Testbuilds shaves 150 mb of the Grafana-image for instance.
+## Contents
+
+The repo contains mostly two different flavors of containers: the original Bitnami image (based on Debian), and a self-composed "Thin-Image" built from scratch. The scratch image is smaller in size and has less exposure to vulnerabilities due to a minimum of installed packages.
+
+
+
+
 
 
 
