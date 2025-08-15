@@ -1,72 +1,52 @@
-name: Build and push changed Docker images
+name: Build and push changed Dockerfiles
 
 on:
   push:
     branches:
-      - main
-  pull_request:
-
-env:
-  REGISTRY: ghcr.io
+      - master
 
 jobs:
-  detect-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      changed-dockerfiles: ${{ steps.detect.outputs.changed }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Finn endrede mapper med Dockerfile
-        id: detect
-        run: |
-          # Finn alle endrede filer siden main
-          CHANGED_PATHS=$(git diff --name-only origin/main...HEAD)
-
-          # Filtrer: behold mapper som inneholder Dockerfile
-          CHANGED_DOCKERS=$(echo "$CHANGED_PATHS" | while read file; do
-            dir=$(dirname "$file")
-            if [ -f "$dir/Dockerfile" ]; then
-              echo "$dir/Dockerfile"
-            fi
-          done | sort -u)
-
-          # Lag JSON-array
-          JSON=$(echo "$CHANGED_DOCKERS" | jq -R -s -c 'split("\n") | map(select(length>0))')
-          echo "Changed dockerfiles: $JSON"
-          echo "changed=$JSON" >> $GITHUB_OUTPUT
-
   build-and-push:
-    needs: detect-changes
-    if: needs.detect-changes.outputs.changed-dockerfiles != '[]'
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        dockerfile: ${{ fromJson(needs.detect-changes.outputs.changed-dockerfiles) }}
-    permissions:
-      contents: read
-      packages: write
+
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Logg inn til GHCR
-        uses: docker/login-action@v3
+      - name: Sjekk ut koden
+        uses: actions/checkout@v4
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # Viktig for git diff
 
-      - name: Bygg og push Docker image
+      - name: Finn endrede Dockerfiles
+        id: find
         run: |
-          # Get the relative path from salamicontainers/salami/
-          REL_PATH=$(realpath --relative-to="${GITHUB_WORKSPACE}/salamicontainers/salami" "$(dirname "${{ matrix.dockerfile }}")")
-          # Replace slashes with dashes for image name
-          IMAGE_NAME=$(echo "$REL_PATH" | tr '/' '-')
-          IMAGE_TAG=${{ env.REGISTRY }}/${{ github.repository }}:$IMAGE_NAME
+          FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'Dockerfile$' || true)
 
-          echo "Bygger $IMAGE_TAG"
-          docker build -f "${{ matrix.dockerfile }}" -t "$IMAGE_TAG" "$(dirname "${{ matrix.dockerfile }}")"
+          if [ -z "$FILES" ]; then
+            echo "Ingen endrede Dockerfiles i denne pushen."
+            echo "files=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
 
-          echo "Pusher $IMAGE_TAG"
-          docker push "$IMAGE_TAG"
+          echo "Fant følgende endrede Dockerfiles:"
+          echo "$FILES"
+
+          FILES_ESCAPED=$(echo "$FILES" | tr '\n' ' ')
+          echo "files=$FILES_ESCAPED" >> $GITHUB_OUTPUT
+
+      - name: Logg inn på Docker Hub
+        if: ${{ steps.find.outputs.files != '' }}
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Bygg og push images
+        if: ${{ steps.find.outputs.files != '' }}
+        run: |
+          for file in ${{ steps.find.outputs.files }}; do
+            dir=$(dirname "$file")
+            image_name=$(basename "$dir")
+
+            echo "Bygger og pusher $image_name fra $file..."
+            docker build "$dir" -t ${{ secrets.DOCKERHUB_USERNAME }}/$image_name:latest
+            docker push ${{ secrets.DOCKERHUB_USERNAME }}/$image_name:latest
+          done
