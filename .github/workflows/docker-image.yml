@@ -40,11 +40,11 @@ jobs:
       - name: Build & Push changed images
         if: github.event_name == 'push' && steps.changed.outputs.changed_files != ''
         run: |
+          owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           for file in ${{ steps.changed.outputs.changed_files }}; do
             dir=$(dirname "$file")
-            # Image navn blir f.eks. ghcr.io/<owner>/salami-grafana-12-debian-12
             name=$(echo "$dir" | tr '/' '-')
-            image="ghcr.io/${{ github.repository_owner }}/$name:latest"
+            image="ghcr.io/$owner/$name:latest"
 
             echo "Building and pushing $file as $image"
             docker build -t "$image" "$dir"
@@ -54,9 +54,10 @@ jobs:
       - name: Manual build & push
         if: github.event_name == 'workflow_dispatch' && inputs.target != ''
         run: |
+          owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           dir=$(dirname "${{ inputs.target }}")
           name=$(echo "$dir" | tr '/' '-')
-          image="ghcr.io/${{ github.repository_owner }}/$name:latest"
+          image="ghcr.io/$owner/$name:latest"
 
           echo "Building and pushing manual target ${{ inputs.target }} as $image"
           docker build -t "$image" "$dir"
