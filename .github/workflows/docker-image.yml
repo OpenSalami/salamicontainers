@@ -68,6 +68,27 @@ jobs:
             fi
           done
 
+      - name: Bump patch version and push
+        if: github.event_name == 'push' && steps.changed.outputs.changed_files != ''
+        run: |
+          set -e
+          for file in ${{ steps.changed.outputs.changed_files }}; do
+            dir=$(dirname "$file")
+            version_file="$dir/VERSION"
+            if [ -f "$version_file" ]; then
+              old_version=$(cat "$version_file")
+              # Bump patch version (X.Y.Z -> X.Y.$((Z+1)))
+              new_version=$(echo "$old_version" | awk -F. '{$NF = $NF + 1;} 1' OFS=.)
+              echo "$new_version" > "$version_file"
+              echo "Bumped $version_file: $old_version -> $new_version"
+            fi
+          done
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add salami/**/VERSION
+          git commit -m "ci: bump image version(s) [skip ci]" || echo "No changes to commit"
+          git push
+
       - name: Manual build & push
         if: github.event_name == 'workflow_dispatch' && inputs.target != ''
         run: |
@@ -88,4 +109,23 @@ jobs:
           if [ "$version" != "latest" ]; then
             docker tag "$image" "ghcr.io/$owner/$name:latest"
             docker push "ghcr.io/$owner/$name:latest"
+            fi
+
+      - name: Bump patch version and push (manual)
+        if: github.event_name == 'workflow_dispatch' && inputs.target != ''
+        run: |
+          set -e
+          dir=$(dirname "${{ inputs.target }}")
+          version_file="$dir/VERSION"
+          if [ -f "$version_file" ]; then
+            old_version=$(cat "$version_file")
+            new_version=$(echo "$old_version" | awk -F. '{$NF = $NF + 1;} 1' OFS=.)
+            echo "$new_version" > "$version_file"
+            echo "Bumped $version_file: $old_version -> $new_version"
+            git config user.name "github-actions"
+            git config user.email "github-actions@github.com"
+            git add "$version_file"
+            git commit -m "ci: bump image version (manual) [skip ci]" || echo "No changes to commit"
+            git push
           fi
+      
