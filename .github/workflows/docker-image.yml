@@ -11,6 +11,9 @@ on:
         description: "Path to the Dockerfile (e.g. salami/grafana/12/debian-12/Dockerfile)"
         required: false
         type: string
+permissions:
+  packages: write
+  contents: read
 
 jobs:
   detect-and-build:
