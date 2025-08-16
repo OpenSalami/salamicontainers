@@ -5,12 +5,14 @@ on:
     paths:
       - "salami/**/Dockerfile"
       - "salami/**/docker-compose.yml"
+      - "salami/**/VERSION"
   workflow_dispatch:
     inputs:
       target:
         description: "Path to the Dockerfile (e.g. salami/grafana/12/debian-12/Dockerfile)"
         required: false
         type: string
+
 permissions:
   packages: write
   contents: read
@@ -47,11 +49,21 @@ jobs:
           for file in ${{ steps.changed.outputs.changed_files }}; do
             dir=$(dirname "$file")
             name=$(echo "$dir" | tr '/' '-')
-            image="ghcr.io/$owner/$name:latest"
-
+            version_file="$dir/VERSION"
+            if [ -f "$version_file" ]; then
+              version=$(cat "$version_file")
+            else
+              version="latest"
+            fi
+            image="ghcr.io/$owner/$name:$version"
             echo "Building and pushing $file as $image"
             docker build -t "$image" "$dir"
             docker push "$image"
+            # Optionally also tag as latest if version is not latest
+            if [ "$version" != "latest" ]; then
+              docker tag "$image" "ghcr.io/$owner/$name:latest"
+              docker push "ghcr.io/$owner/$name:latest"
+            fi
           done
 
       - name: Manual build & push
@@ -60,8 +72,18 @@ jobs:
           owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           dir=$(dirname "${{ inputs.target }}")
           name=$(echo "$dir" | tr '/' '-')
-          image="ghcr.io/$owner/$name:latest"
-
+          version_file="$dir/VERSION"
+          if [ -f "$version_file" ]; then
+            version=$(cat "$version_file")
+          else
+            version="latest"
+          fi
+          image="ghcr.io/$owner/$name:$version"
           echo "Building and pushing manual target ${{ inputs.target }} as $image"
           docker build -t "$image" "$dir"
           docker push "$image"
+          # Optionally also tag as latest if version is not latest
+          if [ "$version" != "latest" ]; then
+            docker tag "$image" "ghcr.io/$owner/$name:latest"
+            docker push "ghcr.io/$owner/$name:latest"
+          fi
