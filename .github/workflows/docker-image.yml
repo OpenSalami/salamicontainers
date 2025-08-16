@@ -15,7 +15,7 @@ on:
 
 permissions:
   packages: write
-  contents: read
+  contents: write
 
 jobs:
   detect-and-build:
