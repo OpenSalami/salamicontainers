@@ -14,20 +14,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Install Trivy
         uses: aquasecurity/trivy-action@0.32.0
+
+      - name: Install GitHub CLI
+        run: sudo apt-get update && sudo apt-get install -y gh
 
       - name: Scan repo files for vulnerabilities
         id: scan-fs
         continue-on-error: true
         run: |
           trivy fs --severity CRITICAL --format table --output trivy-fs.txt .
-      
+
       - name: Build and scan Docker images
         id: scan-images
         continue-on-error: true
         run: |
-          set -e
           > trivy-images.txt
           for dockerfile in $(find . -name Dockerfile); do
             dir=$(dirname "$dockerfile")
