@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Trivy
-        uses: aquasecurity/trivy-action@v0.16.2
+        uses: aquasecurity/trivy-action@0.32.0
 
       - name: Scan repo files for vulnerabilities
         id: scan-fs
