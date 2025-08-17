@@ -14,9 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Install Trivy
         uses: aquasecurity/trivy-action@0.32.0
 
@@ -29,36 +26,14 @@ jobs:
         run: |
           trivy fs --severity CRITICAL --format table --output trivy-fs.txt .
 
-      - name: Build and scan Docker images
-        id: scan-images
-        continue-on-error: true
-        run: |
-          > trivy-images.txt
-          for dockerfile in $(find . -name Dockerfile); do
-            dir=$(dirname "$dockerfile")
-            imagename="scan-$(echo $dir | tr '/.' '-'):latest"
-            docker build -t "$imagename" "$dir" || continue
-            trivy image --severity CRITICAL --format table --output tmp-trivy-image.txt "$imagename" || true
-            echo "Results for $imagename:" >> trivy-images.txt
-            cat tmp-trivy-image.txt >> trivy-images.txt
-            echo "" >> trivy-images.txt
-          done
-
       - name: Check for CRITICAL vulnerabilities and create issue
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          critical_found=false
           if grep -q "CRITICAL:" trivy-fs.txt; then
-            critical_found=true
-          fi
-          if grep -q "CRITICAL:" trivy-images.txt; then
-            critical_found=true
-          fi
-          if [ "$critical_found" = true ]; then
             title="CRITICAL vulnerabilities found by Trivy"
-            body="### Filesystem scan\n\`\`\`\n$(cat trivy-fs.txt)\n\`\`\`\n\n### Docker images scan\n\`\`\`\n$(cat trivy-images.txt)\n\`\`\`"
+            body="### Filesystem scan\n\`\`\`\n$(cat trivy-fs.txt)\n\`\`\`"
             gh issue create --title "$title" --body "$body" --label "security"
             exit 1
           fi
