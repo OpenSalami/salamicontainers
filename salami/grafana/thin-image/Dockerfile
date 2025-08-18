@@ -18,7 +18,6 @@ RUN apk add --no-cache curl tar git ca-certificates shadow util-linux su-exec &&
     curl -fsSL -o grafana.tar.gz "https://dl.grafana.com/oss/release/grafana-${GRAFANA_VERSION}.linux-amd64.tar.gz" && \
     mkdir /grafana && \
     tar -xzf grafana.tar.gz -C /grafana --strip-components=1 && \
-    git clone https://github.com/OpenSalami/rootfs.git /prebuildfs
 
 
 RUN find /prebuildfs/prebuildfs/opt/salami/scripts -type f -name '*.sh' -exec chmod +x {} \; || true
@@ -29,7 +28,7 @@ RUN mkdir -p /opt/salami/scripts && cp -r /rootfs/opt/salami/scripts/* /opt/sala
 
 RUN /opt/salami/scripts/grafana/postunpack.sh
 
-FROM scratch
+FROM ghcr.io/opensalami/salamibase-thin:latest
 
 COPY --from=builder /grafana /grafana
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
