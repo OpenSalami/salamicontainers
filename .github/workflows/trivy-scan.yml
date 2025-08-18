@@ -30,15 +30,14 @@ jobs:
         run: |
           owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           repo=$(basename "${GITHUB_REPOSITORY}")
-          # List all image names in the repo's GHCR namespace
-          images=$(gh api -H "Accept: application/vnd.github+json" /users/$owner/packages?package_type=container | jq -r '.[].name' | grep "^$repo" || true)
+          # Use /orgs for organizations
+          images=$(gh api -H "Accept: application/vnd.github+json" /orgs/$owner/packages?package_type=container | jq -r '.[].name' | grep "^$repo" || true)
           if [ -z "$images" ]; then
             echo "No GHCR images found for this repo."
             exit 0
           fi
           for image in $images; do
-            # Get all tags for the image
-            tags=$(gh api -H "Accept: application/vnd.github+json" /users/$owner/packages/container/$image/versions | jq -r '.[].metadata.container.tags[]' | sort -u)
+            tags=$(gh api -H "Accept: application/vnd.github+json" /orgs/$owner/packages/container/$image/versions | jq -r '.[].metadata.container.tags[]' | sort -u)
             for tag in $tags; do
               full_image="ghcr.io/$owner/$image:$tag"
               echo "Scanning $full_image"
