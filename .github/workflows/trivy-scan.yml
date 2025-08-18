@@ -16,10 +16,10 @@ jobs:
 
       - name: Install Trivy
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget
-          wget -qO- https://github.com/aquasecurity/trivy/releases/latest/download/trivy_$(uname -s)_$(uname -m).tar.gz | tar xz
-          sudo mv trivy /usr/local/bin/
+            wget -qO- https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+            sudo mv trivy /usr/local/bin/
+    
+          
 
       - name: Install GitHub CLI
         run: sudo apt-get update && sudo apt-get install -y gh
