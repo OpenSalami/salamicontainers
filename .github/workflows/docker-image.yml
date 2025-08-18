@@ -6,6 +6,10 @@ on:
       - "salami/**/Dockerfile"
       - "salami/**/docker-compose.yml"
       - "salami/**/VERSION"
+      - "salamibase/**/Dockerfile"
+      - "salamibase/**/docker-compose.yml"
+      - "salamibase/**/VERSION"
+      
   workflow_dispatch:
     inputs:
       target:
