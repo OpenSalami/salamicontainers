@@ -27,6 +27,7 @@ jobs:
         continue-on-error: true
         run: |
           trivy fs --severity CRITICAL --format table --output trivy-fs.txt .
+          cat trivy-fs.txt
 
       - name: Check for CRITICAL vulnerabilities and create issue
         if: always()
