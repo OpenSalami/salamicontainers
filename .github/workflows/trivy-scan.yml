@@ -23,13 +23,8 @@ jobs:
       - name: Scan repo files for vulnerabilities
         id: scan-fs
         continue-on-error: true
-        uses: aquasecurity/trivy-action@0.32.0
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          severity: 'CRITICAL'
-          format: 'table'
-          output: 'trivy-fs.txt'
+        run: |
+          trivy fs --severity CRITICAL --format table --output trivy-fs.txt .
 
       - name: Check for CRITICAL vulnerabilities and create issue
         if: always()
