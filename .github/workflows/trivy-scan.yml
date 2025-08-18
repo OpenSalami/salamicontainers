@@ -22,21 +22,27 @@ jobs:
       - name: Install GitHub CLI
         run: sudo apt-get update && sudo apt-get install -y gh
 
-      - name: Scan repo files for vulnerabilities
-        id: scan-fs
-        continue-on-error: true
-        run: |
-          trivy fs --severity CRITICAL --format table --output trivy-fs.txt .
-          cat trivy-fs.txt
-
-      - name: Check for CRITICAL vulnerabilities and create issue
-        if: always()
+      - name: Scan all GHCR images for vulnerabilities
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TRIVY_USERNAME: ${{ github.actor }}
+          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if grep -q "CRITICAL:" trivy-fs.txt; then
-            title="CRITICAL vulnerabilities found by Trivy"
-            body="### Filesystem scan\n\`\`\`\n$(cat trivy-fs.txt)\n\`\`\`"
-            gh issue create --title "$title" --body "$body" --label "security"
-            exit 1
+          owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          repo=$(basename "${GITHUB_REPOSITORY}")
+          # List all image names in the repo's GHCR namespace
+          images=$(gh api -H "Accept: application/vnd.github+json" /users/$owner/packages?package_type=container | jq -r '.[].name' | grep "^$repo" || true)
+          if [ -z "$images" ]; then
+            echo "No GHCR images found for this repo."
+            exit 0
           fi
+          for image in $images; do
+            # Get all tags for the image
+            tags=$(gh api -H "Accept: application/vnd.github+json" /users/$owner/packages/container/$image/versions | jq -r '.[].metadata.container.tags[]' | sort -u)
+            for tag in $tags; do
+              full_image="ghcr.io/$owner/$image:$tag"
+              echo "Scanning $full_image"
+              echo "$TRIVY_PASSWORD" | trivy image --severity CRITICAL --format table --output "trivy-image-$image-$tag.txt" --username "$TRIVY_USERNAME" --password-stdin "$full_image" || true
+              cat "trivy-image-$image-$tag.txt"
+            done
+          done
