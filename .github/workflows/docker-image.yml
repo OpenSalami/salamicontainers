@@ -62,14 +62,8 @@ jobs:
               version="latest"
             fi
             image="ghcr.io/$owner/$name:$version"
-            echo "Building and pushing $file as $image"
-            docker build -t "$image" "$dir"
-            docker push "$image"
-            # Optionally also tag as latest if version is not latest
-            if [ "$version" != "latest" ]; then
-              docker tag "$image" "ghcr.io/$owner/$name:latest"
-              docker push "ghcr.io/$owner/$name:latest"
-            fi
+            echo "Building and pushing $file as $image (multi-arch)"
+            docker buildx build --platform linux/amd64,linux/arm64 -t "$image" -t "ghcr.io/$owner/$name:latest" --push "$dir"
           done
 
       - name: Bump patch version and push
@@ -106,14 +100,8 @@ jobs:
             version="latest"
           fi
           image="ghcr.io/$owner/$name:$version"
-          echo "Building and pushing manual target ${{ inputs.target }} as $image"
-          docker build -t "$image" "$dir"
-          docker push "$image"
-          # Optionally also tag as latest if version is not latest
-          if [ "$version" != "latest" ]; then
-            docker tag "$image" "ghcr.io/$owner/$name:latest"
-            docker push "ghcr.io/$owner/$name:latest"
-            fi
+          echo "Building and pushing manual target ${{ inputs.target }} as $image (multi-arch)"
+          docker buildx build --platform linux/amd64,linux/arm64 -t "$image" -t "ghcr.io/$owner/$name:latest" --push "$dir"
 
       - name: Bump patch version and push (manual)
         if: github.event_name == 'workflow_dispatch' && inputs.target != ''
