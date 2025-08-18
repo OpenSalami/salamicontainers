@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Install Trivy
         uses: aquasecurity/trivy-action@0.32.0
@@ -23,8 +23,13 @@ jobs:
       - name: Scan repo files for vulnerabilities
         id: scan-fs
         continue-on-error: true
-        run: |
-          trivy fs --severity CRITICAL --format table --output trivy-fs.txt .
+        uses: aquasecurity/trivy-action@0.32.0
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          severity: 'CRITICAL'
+          format: 'table'
+          output: 'trivy-fs.txt'
 
       - name: Check for CRITICAL vulnerabilities and create issue
         if: always()
