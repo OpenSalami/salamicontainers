@@ -101,7 +101,7 @@ jobs:
           fi
           image="ghcr.io/$owner/$name:$version"
           echo "Building and pushing manual target ${{ inputs.target }} as $image (multi-arch)"
-          docker buildx build --platform linux/amd64,linux/arm64 -t "$image" -t "ghcr.io/$owner/$name:latest" --push "$dir"
+          docker buildx build --no-cache --platform linux/amd64,linux/arm64 -t "$image" -t "ghcr.io/$owner/$name:latest" --push "$dir"
 
       - name: Bump patch version and push (manual)
         if: github.event_name == 'workflow_dispatch' && inputs.target != ''
