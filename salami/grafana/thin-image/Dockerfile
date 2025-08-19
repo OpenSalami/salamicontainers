@@ -7,9 +7,9 @@ WORKDIR /tmp
 
 # Set GRAFANA_ARCH and MUSL_LIB for the build
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
-      export GRAFANA_ARCH=linux-amd64 && export MUSL_LIB=ld-musl-x86_64.so.1 ; \
+      export GRAFANA_ARCH=amd64 && export MUSL_LIB=ld-musl-x86_64.so.1 ; \
     elif [ "$TARGETARCH" = "arm64" ]; then \
-      export GRAFANA_ARCH=linux-arm64 && export MUSL_LIB=ld-musl-aarch64.so.1 ; \
+      export GRAFANA_ARCH=arm64 && export MUSL_LIB=ld-musl-aarch64.so.1 ; \
     else \
       echo "Unsupported arch: $TARGETARCH" && exit 1 ; \
     fi && \
@@ -19,7 +19,7 @@ RUN if [ "$TARGETARCH" = "amd64" ]; then \
 # Install dependencies and download/copy files
 RUN set -a && . /tmp/arch.env && set +a && \
     apk add --no-cache curl tar git ca-certificates shadow util-linux su-exec && \
-    curl -fsSL -o grafana.tar.gz "https://dl.grafana.com/oss/release/grafana-${GRAFANA_VERSION}.${GRAFANA_ARCH}.tar.gz" && \
+    curl -fsSL -o grafana.tar.gz "https://dl.grafana.com/oss/release/grafana-${GRAFANA_VERSION}.linux-${GRAFANA_ARCH}.tar.gz" && \
     mkdir /grafana && \
     tar -xzf grafana.tar.gz -C /grafana --strip-components=1 && \
     git clone https://github.com/OpenSalami/rootfs.git /prebuildfs
