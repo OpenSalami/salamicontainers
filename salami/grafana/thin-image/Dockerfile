@@ -5,16 +5,14 @@ ENV GRAFANA_VERSION=12.1.1
 
 WORKDIR /tmp
 
-# Set GRAFANA_ARCH and MUSL_LIB for the build
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
-      export GRAFANA_ARCH=amd64 && export MUSL_LIB=ld-musl-x86_64.so.1 ; \
+      export GRAFANA_ARCH=amd64 ; \
     elif [ "$TARGETARCH" = "arm64" ]; then \
-      export GRAFANA_ARCH=arm64 && export MUSL_LIB=ld-musl-aarch64.so.1 ; \
+      export GRAFANA_ARCH=arm64 ; \
     else \
       echo "Unsupported arch: $TARGETARCH" && exit 1 ; \
     fi && \
-    echo "GRAFANA_ARCH=$GRAFANA_ARCH" > /tmp/arch.env && \
-    echo "MUSL_LIB=$MUSL_LIB" >> /tmp/arch.env
+    echo "GRAFANA_ARCH=$GRAFANA_ARCH" > /tmp/arch.env
 
 # Install dependencies and download/copy files
 RUN set -a && . /tmp/arch.env && set +a && \
