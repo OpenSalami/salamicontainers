@@ -7,9 +7,9 @@ WORKDIR /tmp
 
 # Set GRAFANA_ARCH and MUSL_LIB for the build
 RUN if [ "$TARGETARCH" = "amd64" ]; then \
-      export GRAFANA_ARCH=amd64 && export MUSL_LIB=ld-musl-x86_64.so.1 ; \
+      export GRAFANA_ARCH=linux-amd64 && export MUSL_LIB=ld-musl-x86_64.so.1 ; \
     elif [ "$TARGETARCH" = "arm64" ]; then \
-      export GRAFANA_ARCH=arm64 && export MUSL_LIB=ld-musl-aarch64.so.1 ; \
+      export GRAFANA_ARCH=linux-arm64 && export MUSL_LIB=ld-musl-aarch64.so.1 ; \
     else \
       echo "Unsupported arch: $TARGETARCH" && exit 1 ; \
     fi && \
