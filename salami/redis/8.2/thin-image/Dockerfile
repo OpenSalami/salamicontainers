@@ -1,4 +1,4 @@
-ARG TARGETARCH=arm64
+ARG TARGETARCH
 FROM redis as builder
 
 from alpine:3.20 AS builder2
