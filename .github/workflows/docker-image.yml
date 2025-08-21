@@ -46,13 +46,15 @@ jobs:
         if: github.event_name == 'push'
         run: |
           files=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'Dockerfile' || true)
+          files=$(echo "$files" | paste -sd "," -)
           echo "changed_files=$files" >> $GITHUB_OUTPUT
 
       - name: Build & Push changed images
         if: github.event_name == 'push' && steps.changed.outputs.changed_files != ''
         run: |
           owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          for file in ${{ steps.changed.outputs.changed_files }}; do
+          IFS=',' read -ra changed_files <<< "${{ steps.changed.outputs.changed_files }}"
+          for file in "${changed_files[@]}"; do
             dir=$(dirname "$file")
             name=$(echo "$dir" | tr '/' '-')
             version_file="$dir/VERSION"
@@ -70,7 +72,8 @@ jobs:
         if: github.event_name == 'push' && steps.changed.outputs.changed_files != ''
         run: |
           set -e
-          for file in ${{ steps.changed.outputs.changed_files }}; do
+          IFS=',' read -ra changed_files <<< "${{ steps.changed.outputs.changed_files }}"
+          for file in "${changed_files[@]}"; do
             dir=$(dirname "$file")
             version_file="$dir/VERSION"
             if [ -f "$version_file" ]; then
