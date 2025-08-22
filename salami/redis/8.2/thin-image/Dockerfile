@@ -1,7 +1,7 @@
 ARG TARGETARCH
 FROM redis as builder
 
-FROM alpine:3.20 AS gather-libs
+FROM alpine:3.22 AS gather-libs
 
 # Install required libraries for both amd64 and arm64
 RUN apk add --no-cache libstdc++ openssl git
