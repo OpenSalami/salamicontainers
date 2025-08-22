@@ -95,7 +95,7 @@ jobs:
         run: |
           owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           dir=$(dirname "${{ inputs.target }}")
-          name=$(echo "$dir" | tr '/' '-')
+          name=$(echo "$dir" | tr '/' '-' | tr -d ' ')
           version_file="$dir/VERSION"
           if [ -f "$version_file" ]; then
             version=$(cat "$version_file")
@@ -123,4 +123,3 @@ jobs:
             git commit -m "ci: bump image version (manual) [skip ci]" || echo "No changes to commit"
             git push
           fi
-      
