@@ -12,14 +12,14 @@
 
 # Load logging library
 # shellcheck disable=SC1090,SC1091
-. /opt/bitnami/scripts/liblog.sh
+. /opt/salami/scripts/liblog.sh
 
-export BITNAMI_ROOT_DIR="/opt/bitnami"
-export BITNAMI_VOLUME_DIR="/bitnami"
+export SALMAI_ROOT_DIR="/opt/salami"
+export SALAMI_VOLUME_DIR="/salami"
 
 # Logging configuration
 export MODULE="${MODULE:-redis}"
-export BITNAMI_DEBUG="${BITNAMI_DEBUG:-false}"
+export SALAMI_DEBUG="${SALAMI_DEBUG:-false}"
 
 # By setting an environment variable matching *_FILE to a file path, the prefixed environment
 # variable will be overridden with the value specified in that file
@@ -73,8 +73,8 @@ done
 unset redis_env_vars
 
 # Paths
-export REDIS_VOLUME_DIR="/bitnami/redis"
-export REDIS_BASE_DIR="${BITNAMI_ROOT_DIR}/redis"
+export REDIS_VOLUME_DIR="/salami/redis"
+export REDIS_BASE_DIR="${SALAMI_ROOT_DIR}/redis"
 export REDIS_CONF_DIR="${REDIS_BASE_DIR}/etc"
 export REDIS_DEFAULT_CONF_DIR="${REDIS_BASE_DIR}/etc.default"
 export REDIS_DATA_DIR="${REDIS_DATA_DIR:-${REDIS_VOLUME_DIR}/data}"
