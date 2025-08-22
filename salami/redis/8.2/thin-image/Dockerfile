@@ -1,7 +1,7 @@
 ARG TARGETARCH
 FROM redis as builder
 
-from alpine:3.20 AS builder2
+from alpine:3.22 AS builder2
 
 COPY --from=builder /usr/local/bin/redis-server /usr/local/bin/redis-server
 COPY --from=builder /usr/local/bin/redis-cli /usr/local/bin/redis-cli
