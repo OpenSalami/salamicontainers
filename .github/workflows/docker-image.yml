@@ -56,7 +56,7 @@ jobs:
           IFS=',' read -ra changed_files <<< "${{ steps.changed.outputs.changed_files }}"
           for file in "${changed_files[@]}"; do
             dir=$(dirname "$file")
-            name=$(echo "$dir" | tr '/' '-')
+            name=$(echo "$dir" | tr '/' '-' | tr -d ' ')
             version_file="$dir/VERSION"
             if [ -f "$version_file" ]; then
               version=$(cat "$version_file")
