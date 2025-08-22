@@ -1,4 +1,4 @@
-FROM alpine:3.20 AS builder
+FROM alpine:3.22 AS builder
 
 ARG TARGETARCH
 ENV GRAFANA_VERSION=12.1.1
