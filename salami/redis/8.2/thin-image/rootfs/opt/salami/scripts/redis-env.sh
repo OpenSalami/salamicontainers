@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Copyright Broadcom, Inc. All Rights Reserved.
 # SPDX-License-Identifier: APACHE-2.0
 #
@@ -14,7 +14,7 @@
 # shellcheck disable=SC1090,SC1091
 . /opt/salami/scripts/liblog.sh
 
-export SALMAI_ROOT_DIR="/opt/salami"
+export SALAMI_ROOT_DIR="/opt/salami"
 export SALAMI_VOLUME_DIR="/salami"
 
 # Logging configuration
@@ -23,50 +23,16 @@ export SALAMI_DEBUG="${SALAMI_DEBUG:-false}"
 
 # By setting an environment variable matching *_FILE to a file path, the prefixed environment
 # variable will be overridden with the value specified in that file
-redis_env_vars=(
-    REDIS_DATA_DIR
-    REDIS_OVERRIDES_FILE
-    REDIS_DISABLE_COMMANDS
-    REDIS_DATABASE
-    REDIS_AOF_ENABLED
-    REDIS_RDB_POLICY
-    REDIS_RDB_POLICY_DISABLED
-    REDIS_MASTER_HOST
-    REDIS_MASTER_PORT_NUMBER
-    REDIS_PORT_NUMBER
-    REDIS_ALLOW_REMOTE_CONNECTIONS
-    REDIS_REPLICATION_MODE
-    REDIS_REPLICA_IP
-    REDIS_REPLICA_PORT
-    REDIS_EXTRA_FLAGS
-    ALLOW_EMPTY_PASSWORD
-    REDIS_PASSWORD
-    REDIS_MASTER_PASSWORD
-    REDIS_ACLFILE
-    REDIS_IO_THREADS_DO_READS
-    REDIS_IO_THREADS
-    REDIS_TLS_ENABLED
-    REDIS_TLS_PORT_NUMBER
-    REDIS_TLS_CERT_FILE
-    REDIS_TLS_CA_DIR
-    REDIS_TLS_KEY_FILE
-    REDIS_TLS_KEY_FILE_PASS
-    REDIS_TLS_CA_FILE
-    REDIS_TLS_DH_PARAMS_FILE
-    REDIS_TLS_AUTH_CLIENTS
-    REDIS_SENTINEL_MASTER_NAME
-    REDIS_SENTINEL_HOST
-    REDIS_SENTINEL_PORT_NUMBER
-    REDIS_TLS_PORT
-)
-for env_var in "${redis_env_vars[@]}"; do
+redis_env_vars="REDIS_DATA_DIR REDIS_OVERRIDES_FILE REDIS_DISABLE_COMMANDS REDIS_DATABASE REDIS_AOF_ENABLED REDIS_RDB_POLICY REDIS_RDB_POLICY_DISABLED REDIS_MASTER_HOST REDIS_MASTER_PORT_NUMBER REDIS_PORT_NUMBER REDIS_ALLOW_REMOTE_CONNECTIONS REDIS_REPLICATION_MODE REDIS_REPLICA_IP REDIS_REPLICA_PORT REDIS_EXTRA_FLAGS ALLOW_EMPTY_PASSWORD REDIS_PASSWORD REDIS_MASTER_PASSWORD REDIS_ACLFILE REDIS_IO_THREADS_DO_READS REDIS_IO_THREADS REDIS_TLS_ENABLED REDIS_TLS_PORT_NUMBER REDIS_TLS_CERT_FILE REDIS_TLS_CA_DIR REDIS_TLS_KEY_FILE REDIS_TLS_KEY_FILE_PASS REDIS_TLS_CA_FILE REDIS_TLS_DH_PARAMS_FILE REDIS_TLS_AUTH_CLIENTS REDIS_SENTINEL_MASTER_NAME REDIS_SENTINEL_HOST REDIS_SENTINEL_PORT_NUMBER REDIS_TLS_PORT"
+for env_var in $redis_env_vars; do
     file_env_var="${env_var}_FILE"
-    if [[ -n "${!file_env_var:-}" ]]; then
-        if [[ -r "${!file_env_var:-}" ]]; then
-            export "${env_var}=$(< "${!file_env_var}")"
-            unset "${file_env_var}"
+    file_env_path=$(eval "printf '%s' \"\${$file_env_var:-}\"")
+    if [ -n "$file_env_path" ]; then
+        if [ -r "$file_env_path" ]; then
+            export "$env_var=$(< "$file_env_path")"
+            unset "$file_env_var"
         else
-            warn "Skipping export of '${env_var}'. '${!file_env_var:-}' is not readable."
+            warn "Skipping export of '${env_var}'. '${file_env_path:-}' is not readable."
         fi
     fi
 done
@@ -85,8 +51,8 @@ export REDIS_LOG_DIR="${REDIS_BASE_DIR}/logs"
 export REDIS_LOG_FILE="${REDIS_LOG_DIR}/redis.log"
 export REDIS_TMP_DIR="${REDIS_BASE_DIR}/tmp"
 export REDIS_PID_FILE="${REDIS_TMP_DIR}/redis.pid"
-export REDIS_BIN_DIR="${REDIS_BASE_DIR}/bin"
-export PATH="${REDIS_BIN_DIR}:${BITNAMI_ROOT_DIR}/common/bin:${PATH}"
+export REDIS_BIN_DIR="${REDIS_BASE_DIR}"
+export PATH="${REDIS_BIN_DIR}:${PATH}" 
 
 # System users (when running with a privileged user)
 export REDIS_DAEMON_USER="redis"
