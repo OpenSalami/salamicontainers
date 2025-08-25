@@ -13,7 +13,7 @@ RUN git clone --branch $APP_VERSION --depth 1 https://github.com/valkey-io/valke
 WORKDIR /tmp/valkey
 
 # Build Valkey (musl will be used by default on Alpine)
-RUN make -j2
+RUN make -j1
 
 # Optionally run tests (uncomment if you want)
 #RUN make test
@@ -23,7 +23,7 @@ RUN mkdir -p /tmp/bin && cp src/valkey-server src/valkey-cli /tmp/bin/
 # Verify the binaries
 RUN file /tmp/bin/valkey-server /tmp/bin/valkey-cli
 
-FROM ghcr.io/opensalami/salamibase-thin:1.0.3
+FROM ghcr.io/opensalami/salamibase-thin:1.0.4
 
 ENV APP_VERSION=$APP_VERSION \
     SALAMI_APP_NAME="valkey" \
