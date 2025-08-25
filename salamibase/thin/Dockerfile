@@ -23,7 +23,7 @@ RUN mkdir -p /opt/salami/scripts && cp /prebuildfs/prebuildfs/opt/salami/scripts
 FROM scratch
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /bin/sh /bin/sh
+COPY --from=builder /bin/dsh /bin/sh
 COPY --from=builder /lib/${MUSL_LIB} /lib/
 COPY --from=builder /prebuildfs/prebuildfs/opt/salami/scripts/ /opt/salami/scripts/
 COPY --from=builder /bin/busybox /bin/busybox
