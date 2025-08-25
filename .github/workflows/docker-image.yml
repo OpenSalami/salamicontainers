@@ -85,5 +85,3 @@ jobs:
           image="ghcr.io/$owner/$name:$version"
           echo "Building and pushing manual target ${{ inputs.target }} as $image (multi-arch)"
           docker buildx build --no-cache --platform linux/amd64,linux/arm64 -t "$image" -t "ghcr.io/$owner/$name:latest" --push "$dir"
-
-  
