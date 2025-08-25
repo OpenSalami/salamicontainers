@@ -38,7 +38,7 @@ RUN git clone https://github.com/OpenSalami/rootfs.git /prebuildfs && \
 
 RUN /opt/salami/scripts/redis/postunpack.sh
 
-FROM ghcr.io/opensalami/salamibase-thin:1.0.3
+FROM ghcr.io/opensalami/salamibase-thin:1.0.4
 
 ARG TARGETARCH
 
