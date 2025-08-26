@@ -21,27 +21,19 @@ jobs:
           ref: dev
           fetch-depth: 0
 
-      - name: Ensure jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
       - name: Build release plan
         id: plan
         shell: bash
         run: |
           set -euo pipefail
+          sudo apt-get update >/dev/null && sudo apt-get install -y jq >/dev/null
           IFS=, read -r -a ARR <<<"${{ github.event.inputs.dirs }}"
           includes="[]"
           for d in "${ARR[@]}"; do
             d="${d//[$'\n\r\t ']/}"
             [ -n "$d" ] || continue
-            if [ ! -f "$d/Dockerfile" ]; then
-              echo "Skip: $d (no Dockerfile)" >&2
-              continue
-            fi
-            if [ ! -f "$d/VERSION" ]; then
-              echo "Skip: $d (no VERSION)" >&2
-              continue
-            fi
+            [ -f "$d/Dockerfile" ] || { echo "Skip: $d (no Dockerfile)"; continue; }
+            [ -f "$d/VERSION" ] || { echo "Skip: $d (no VERSION)"; continue; }
             ver="$(tr -d '\n\r\t ' < "$d/VERSION")"
             major="$(basename "$d")"
             app="$(basename "$(dirname "$d")")"
