@@ -51,6 +51,7 @@ jobs:
       - name: Create PR dev -> main with release plan
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ github.token }}
           base: main
           branch: "promote/${{ github.run_id }}"
           title: "Promote selected images to main"
