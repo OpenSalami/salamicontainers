@@ -1,0 +1,78 @@
+name: PR Build (changed Dockerfiles only)
+
+on:
+  pull_request:
+    branches: [ dev ]
+
+permissions:
+  contents: read
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+      count: ${{ steps.set.outputs.count }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: set
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.sha }}"
+
+          # List changed Dockerfiles under the monorepo
+          mapfile -t dockerfiles < <(git diff --name-only "$base" "$head" -- 'salamicontainers/**/Dockerfile' | sort -u)
+
+          if [ "${#dockerfiles[@]}" -eq 0 ]; then
+            echo "No Dockerfiles changed."
+            echo "matrix={\"include\":[]}" >> "$GITHUB_OUTPUT"
+            echo "count=0" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          includes="[]"
+          for f in "${dockerfiles[@]}"; do
+            dir="$(dirname "$f")"
+            ver="0.0.0-dev"
+            if [ -f "$dir/VERSION" ]; then
+              ver="$(tr -d '\n\r\t ' < "$dir/VERSION")"
+            fi
+            includes="$(jq -c --arg dir "$dir" --arg df "$f" --arg ver "$ver" \
+              '. + [{dir:$dir,dockerfile:$df,version:$ver}]' <<<"$includes")"
+          done
+
+          echo "matrix=$(jq -c '{include: .}' <<<"$includes")" >> "$GITHUB_OUTPUT"
+          echo "count=$(jq -r 'length' <<<"$includes")" >> "$GITHUB_OUTPUT"
+
+      - name: Show detected changes
+        run: |
+          echo "Count: ${{ steps.set.outputs.count }}"
+          echo '${{ steps.set.outputs.matrix }}' | jq .
+
+  build:
+    needs: detect
+    if: ${{ fromJson(needs.detect.outputs.count) > 0 }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.dockerfile }} (no push)
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            -f "${{ matrix.dockerfile }}" \
+            --build-arg APP_VERSION="${{ matrix.version }}" \
+            --progress=plain \
+            "${{ matrix.dir }}"
