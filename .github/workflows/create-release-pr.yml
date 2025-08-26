@@ -15,10 +15,14 @@ jobs:
   plan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout dev
+        uses: actions/checkout@v4
         with:
           ref: dev
           fetch-depth: 0
+
+      - name: Ensure jq
+        run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Build release plan
         id: plan
@@ -42,7 +46,6 @@ jobs:
             major="$(basename "$d")"
             app="$(basename "$(dirname "$d")")"
             image="ghcr.io/${{ github.repository_owner }}/salami-${app}-${major}"
-            # Tags to publish on main: version and latest
             tags="${image}:${ver},${image}:latest"
             includes="$(jq -c --arg dir "$d" --arg img "$image" --arg ver "$ver" --arg tags "$tags" \
               '. + [{dir:$dir,image:$img,version:$ver,tags:$tags}]' <<<"$includes")"
@@ -55,13 +58,13 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ github.token }}
-          commit-message: "chore(release): promote selected images"
+          base: main
+          branch: "promote/${{ github.run_id }}"
           title: "Promote selected images to main"
+          commit-message: "chore(release): promote selected images"
+          labels: promote
           body: |
             This PR promotes the following images:
             ```
             ${{ steps.plan.outputs.plan }}
             ```
-          branch: "promote/${{ github.run_id }}"
-          base: main
-          labels: promote
