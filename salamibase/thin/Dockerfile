@@ -1,6 +1,6 @@
 FROM alpine:3.22 AS builder
 
-ARG TARGETARCH=amd64
+ARG TARGETARCH
 
 WORKDIR /tmp
 
