@@ -1,3 +1,9 @@
+```
+
+Your file should start like this:
+
+```yaml
+
 name: Create Release PR (select images)
 
 on:
@@ -21,12 +27,14 @@ jobs:
           ref: dev
           fetch-depth: 0
 
+      - name: Ensure jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Build release plan
         id: plan
         shell: bash
         run: |
           set -euo pipefail
-          sudo apt-get update >/dev/null && sudo apt-get install -y jq >/dev/null
           IFS=, read -r -a ARR <<<"${{ github.event.inputs.dirs }}"
           includes="[]"
           for d in "${ARR[@]}"; do
