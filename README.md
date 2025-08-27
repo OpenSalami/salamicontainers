@@ -1,5 +1,3 @@
-# THIS IS THE DEVELOPMENT BRANCH! THIS IS WHERE ACTIVE DEVELOPMENT HAPPENS! CONSIDER THE IMAGES BUILD FROM THIS BRANCH UNSTABLE!
-
 # salamicontainers
 
 A catalog of images I have been curated. Mostly from a fork of the Bitnami catalog.
