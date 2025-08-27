@@ -68,6 +68,8 @@ jobs:
             docker buildx build --platform linux/amd64,linux/arm64 -t "$image" -t "ghcr.io/$owner/$name:latest" --push "$dir"
           done
 
+     
+
       - name: Manual build & push
         if: github.event_name == 'workflow_dispatch' && inputs.target != ''
         run: |
