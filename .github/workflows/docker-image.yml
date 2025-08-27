@@ -63,12 +63,20 @@ jobs:
             else
               version="latest"
             fi
-            image="ghcr.io/$owner/$name:$version"
-            echo "Building and pushing $file as $image (multi-arch)"
-            docker buildx build --platform linux/amd64,linux/arm64 -t "$image" -t "ghcr.io/$owner/$name:latest" --push "$dir"
-          done
 
-     
+            # Append -dev suffix when running on the dev branch
+            suffix=""
+            if [ "${GITHUB_REF_NAME:-}" = "dev" ]; then
+              suffix="-dev"
+            fi
+
+            image="ghcr.io/$owner/$name:${version}${suffix}"
+            echo "Building and pushing $file as $image and ghcr.io/$owner/$name:latest${suffix} (multi-arch)"
+            docker buildx build --platform linux/amd64,linux/arm64 \
+              -t "$image" \
+              -t "ghcr.io/$owner/$name:latest${suffix}" \
+              --push "$dir"
+          done
 
       - name: Manual build & push
         if: github.event_name == 'workflow_dispatch' && inputs.target != ''
@@ -82,6 +90,16 @@ jobs:
           else
             version="latest"
           fi
-          image="ghcr.io/$owner/$name:$version"
-          echo "Building and pushing manual target ${{ inputs.target }} as $image (multi-arch)"
-          docker buildx build --no-cache --platform linux/amd64,linux/arm64 -t "$image" -t "ghcr.io/$owner/$name:latest" --push "$dir"
+
+          # Append -dev suffix when running on the dev branch
+          suffix=""
+          if [ "${GITHUB_REF_NAME:-}" = "dev" ]; then
+            suffix="-dev"
+          fi
+
+          image="ghcr.io/$owner/$name:${version}${suffix}"
+          echo "Building and pushing manual target ${{ inputs.target }} as $image and ghcr.io/$owner/$name:latest${suffix} (multi-arch)"
+          docker buildx build --no-cache --platform linux/amd64,linux/arm64 \
+            -t "$image" \
+            -t "ghcr.io/$owner/$name:latest${suffix}" \
+            --push "$dir"
