@@ -34,5 +34,14 @@ case " $* " in
     info "** Starting Valkey setup **"
     /opt/salami/scripts/valkey/setup.sh
     info "** Valkey setup finished! **"
+    exec "$@"
+    ;;
+  *)
+    # If no arguments, or first arg is not an absolute path, run run.sh by default
+    if [ "$#" -eq 0 ]; then
+      exec /opt/salami/scripts/valkey/run.sh
+    else
+      exec "$@"
+    fi
     ;;
 esac
