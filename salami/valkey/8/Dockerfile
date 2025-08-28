@@ -19,8 +19,8 @@ RUN make -j1 MALLOC=libc
 #RUN make test
 
 # Copy binaries to /tmp/bin
-RUN mkdir -p /tmp/bin && cp src/valkey-server src/valkey-cli /tmp/bin/ && mkdir -p /tmp/bin/etc && \ 
-    touch /tmp/bin/etc/valkey-default.conf
+RUN mkdir -p /tmp/bin && cp src/valkey-server src/valkey-cli /tmp/bin/ && mkdir -p /tmp/bin/etc 
+    #touch /tmp/bin/etc/valkey-default.conf
 
 # Verify the binaries
 RUN file /tmp/bin/valkey-server /tmp/bin/valkey-cli
