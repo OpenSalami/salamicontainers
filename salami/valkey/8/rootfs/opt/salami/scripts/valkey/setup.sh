@@ -20,7 +20,9 @@ valkey_validate
 
 # Ensure Valkey daemon user exists when running as root
 if am_i_root; then
-    ensure_user_exists "$VALKEY_DAEMON_USER" --group "$VALKEY_DAEMON_GROUP"
+    if ! id "$VALKEY_DAEMON_USER" >/dev/null 2>&1; then
+        ensure_user_exists "$VALKEY_DAEMON_USER" --group "$VALKEY_DAEMON_GROUP"
+    fi
 fi
 
 # Ensure Valkey is initialized
