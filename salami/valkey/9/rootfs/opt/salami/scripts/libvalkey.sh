@@ -57,12 +57,21 @@ valkey_conf_set() {
     value="$(trim_newlines_tabs "$value")"
     esc="$(_escape_sed "$value")"
 
+    # If value is empty and key is logfile, write logfile ""
+    if [ "$key" = "logfile" ] && [ -z "$value" ]; then
+        value='""'
+        esc='""'
+    fi
+
     if [ "$key" = "save" ]; then
-        # Multiple 'save' lines are allowed
         echo "$key $value" >> "${VALKEY_BASE_DIR}/etc/valkey.conf"
     else
-        # replace_in_file <file> <match> <replace> <regex?>
-        replace_in_file "${VALKEY_BASE_DIR}/etc/valkey.conf" "^#*[[:space:]]*${key}[[:space:]].*" "${key} ${esc}" false
+        # If key exists, replace; else, append
+        if grep -q -E "^[[:space:]]*$key[[:space:]]+" "${VALKEY_BASE_DIR}/etc/valkey.conf"; then
+            replace_in_file "${VALKEY_BASE_DIR}/etc/valkey.conf" "^#*[[:space:]]*${key}[[:space:]].*" "${key} ${esc}" false
+        else
+            echo "${key} ${value}" >> "${VALKEY_BASE_DIR}/etc/valkey.conf"
+        fi
     fi
 }
 
@@ -338,6 +347,9 @@ valkey_append_include_conf() {
 #########################
 valkey_configure_default() {
     info "Initializing Valkey"
+    echo "DEBUG: Writing config to $VALKEY_BASE_DIR/etc/valkey.conf"
+    ls -l "$VALKEY_BASE_DIR/etc"
+    
 
     rm -f "$VALKEY_BASE_DIR/tmp/valkey.pid"
 
@@ -414,5 +426,8 @@ valkey_configure_default() {
         fi
 
         valkey_append_include_conf
+        echo "correct configuration:"
+        cat "$VALKEY_BASE_DIR/etc/valkey.conf"
+        cat "$VALKEY_BASE_DIR/etc/valkey-default.conf"
     fi
 }

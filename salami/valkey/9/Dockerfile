@@ -30,10 +30,16 @@ ENV APP_VERSION=$APP_VERSION \
     SALAMI_APP_NAME="valkey" \
     PATH="/opt/salami/mysql/bin:/opt/salami/common/bin:/opt/salami/valkey/bin:$PATH"
 
+RUN touch /etc/passwd /etc/group
+RUN addgroup -S valkey && adduser -S -G valkey valkey
+
 COPY --from=builder /tmp/bin/* /opt/salami/valkey/
 COPY rootfs/opt/salami/scripts /opt/salami/scripts
 RUN mkdir -p /salami /opt/salami/valkey/etc && \
     touch /opt/salami/valkey/etc/valkey-default.conf
+
+RUN chmod +x /opt/salami/scripts/valkey/run.sh
+RUN ls -l /opt/salami/scripts/valkey/run.sh
 
 RUN ["/bin/sh", "-c", "exec /opt/salami/scripts/valkey/postunpack.sh"]
 
