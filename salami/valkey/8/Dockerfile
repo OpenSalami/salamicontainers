@@ -39,5 +39,5 @@ RUN ["/bin/sh", "-c", "exec /opt/salami/scripts/valkey/postunpack.sh"]
 
 EXPOSE 6379
 
-#ENTRYPOINT [ "/opt/salami/scripts/valkey/entrypoint.sh" ]
+ENTRYPOINT [ "/opt/salami/scripts/valkey/entrypoint.sh" ]
 CMD [ "/opt/salami/scripts/valkey/run.sh" ]
