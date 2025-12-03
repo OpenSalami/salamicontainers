@@ -1,4 +1,4 @@
-FROM alpine:3.22 AS builder
+FROM alpine:3.23 AS builder
 ARG TARGETARCH
 ENV APP_VERSION=9.0.0-rc1
 
