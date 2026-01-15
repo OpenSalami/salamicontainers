@@ -29,8 +29,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     echo $TZ > /etc/timezone
 
 # Basic hostname/hosts for Ohai
-RUN echo "cinc-server" > /etc/hostname && \
-    printf "127.0.0.1 localhost cinc-server\n::1 localhost ip6-localhost ip6-loopback\n" > /etc/hosts
+RUN echo "cinc-server" > /etc/hostname 
 
 # Install Cinc Server (amd64)
 RUN curl -L https://omnitruck.cinc.sh/install.sh -o /tmp/install-cinc.sh && \
