@@ -9,7 +9,7 @@ on:
       - "salamibase/**/Dockerfile"
       - "salamibase/**/docker-compose.yml"
       - "salamibase/**/VERSION"
-      
+
   workflow_dispatch:
     inputs:
       target:
@@ -38,6 +38,14 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.HARBOR_REGISTRY }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
       - name: Fetch full git history
         run: git fetch --prune --unshallow || true
 
@@ -63,12 +71,14 @@ jobs:
             else
               version="latest"
             fi
-            image="ghcr.io/$owner/$name:$version"
-            echo "Building and pushing $file as $image (multi-arch)"
-            docker buildx build --platform linux/amd64 -t "$image" -t "ghcr.io/$owner/$name:latest" --push "$dir"
+            ghcr_image="ghcr.io/$owner/$name:$version"
+            harbor_image="${{ secrets.HARBOR_REGISTRY }}/salami/$name:$version"
+            echo "Building and pushing $file"
+            docker buildx build --platform linux/amd64 \
+              -t "$ghcr_image" -t "ghcr.io/$owner/$name:latest" \
+              -t "$harbor_image" -t "${{ secrets.HARBOR_REGISTRY }}/salami/$name:latest" \
+              --push "$dir"
           done
-
-     
 
       - name: Manual build & push
         if: github.event_name == 'workflow_dispatch' && inputs.target != ''
@@ -82,6 +92,10 @@ jobs:
           else
             version="latest"
           fi
-          image="ghcr.io/$owner/$name:$version"
-          echo "Building and pushing manual target ${{ inputs.target }} as $image (multi-arch)"
-          docker buildx build --no-cache --platform linux/amd64,linux/arm64 -t "$image" -t "ghcr.io/$owner/$name:latest" --push "$dir"
+          ghcr_image="ghcr.io/$owner/$name:$version"
+          harbor_image="${{ secrets.HARBOR_REGISTRY }}/salami/$name:$version"
+          echo "Building and pushing manual target ${{ inputs.target }}"
+          docker buildx build --no-cache --platform linux/amd64,linux/arm64 \
+            -t "$ghcr_image" -t "ghcr.io/$owner/$name:latest" \
+            -t "$harbor_image" -t "${{ secrets.HARBOR_REGISTRY }}/salami/$name:latest" \
+            --push "$dir"
