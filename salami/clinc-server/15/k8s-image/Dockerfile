@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:26.04
 
 # Minimal base for running Cinc Server in a container/Kubernetes (no systemd)
 RUN apt-get update && \
